@@ -25,9 +25,10 @@ export interface Options {
 export declare class Server {
     private _options;
     private _wss;
-    private _routes;
+    private _wsRoutes;
     constructor(options: Options);
     addWsRoute(path: string, handler: Handler): void;
+    getOptions(): Options;
     getWsRoutes(): Map<string, Handler>;
     start(): void;
     stop(): void;

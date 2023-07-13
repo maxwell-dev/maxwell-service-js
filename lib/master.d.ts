@@ -1,17 +1,12 @@
-import { Options, ProtocolMsg } from "maxwell-utils";
+import { Event, Options, ProtocolMsg } from "maxwell-utils";
 export declare class Master {
-    private _endpoints;
-    private _options;
     private _connection;
-    private _endpoint_index;
-    private _condition;
+    private static _instance;
     constructor(endpoints: string[], options: Options);
+    static singleton(endpoints: string[], options: Options): Master;
     close(): void;
+    addConnectionListener(event: Event, listener: (result?: any) => void): void;
+    deleteConnectionListener(event: Event, listener: (result?: any) => void): void;
     request(msg: ProtocolMsg): Promise<any>;
-    private _connectToMaster;
-    private _disconnectFromMaster;
-    private _onConnectToMasterDone;
-    private _onConnectToMasterFailed;
-    private _nextEndpoint;
 }
 export default Master;

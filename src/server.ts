@@ -36,19 +36,19 @@ export interface Options {
 export class Server {
   private _options: Options;
   private _wss: WebSocketServer;
-  private _routes: Map<string, Handler>;
+  private _wsRoutes: Map<string, Handler>;
 
   constructor(options: Options) {
     this._options = Server._buildOptions(options);
     this._wss = new WebSocketServer(options);
-    this._routes = new Map();
+    this._wsRoutes = new Map();
   }
 
   public addWsRoute(path: string, handler: Handler) {
     if (handler.constructor.name === "Function") {
-      this._routes.set(path, handler);
+      this._wsRoutes.set(path, handler);
     } else if (handler.constructor.name === "AsyncFunction") {
-      this._routes.set(path, handler);
+      this._wsRoutes.set(path, handler);
     } else {
       throw new Error(
         `The handler must be a funciton, but got a "${handler.constructor.name}"`
@@ -56,23 +56,21 @@ export class Server {
     }
   }
 
+  public getOptions() {
+    return this._options;
+  }
+
   public getWsRoutes() {
-    return this._routes;
+    return this._wsRoutes;
   }
 
   public start() {
-    const master = new Master(
+    const master = Master.singleton(
       this._options.master_endpoints,
       new ConntionOptions()
     );
-
-    const registerReq = new msg_types.register_server_req_t({
-      httpPort: this._options.port,
-    });
-    master.request(registerReq).then(() => {
-      const reporter = new Reporter(master, this);
-      reporter.start();
-    });
+    const reporter = new Reporter(master, this);
+    reporter.start();
 
     this._wss.on("listening", () => {
       console.info(
@@ -101,7 +99,7 @@ export class Server {
         const req = decode_msg(data);
         const reqType = req.constructor;
         if (reqType === msg_types.req_req_t) {
-          const handler = this._routes.get(req.path);
+          const handler = this._wsRoutes.get(req.path);
           if (typeof handler === "undefined") {
             ws.send(
               encode_msg(

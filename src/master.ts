@@ -1,90 +1,41 @@
-import {
-  Code,
-  Event,
-  Condition,
-  Connection,
-  Options,
-  ProtocolMsg,
-} from "maxwell-utils";
+import { Event, Connection, Options, ProtocolMsg } from "maxwell-utils";
 
 export class Master {
-  private _endpoints: string[];
-  private _options: Options;
-  private _connection: Connection | null;
-  private _endpoint_index: number;
-  private _condition: Condition;
+  private _connection: Connection;
+  private static _instance: Master;
 
   constructor(endpoints: string[], options: Options) {
-    this._endpoints = endpoints;
-    this._options = options;
-
-    this._connection = null;
-    this._endpoint_index = -1;
-    this._connectToMaster();
-
-    this._condition = new Condition(() => {
-      return this._connection !== null && this._connection.isOpen();
-    });
+    this._connection = new Connection(endpoints, options);
   }
 
-  close(): void {
-    this._disconnectFromMaster();
-    this._condition.clear();
+  static singleton(endpoints: string[], options: Options): Master {
+    if (typeof Master._instance === "undefined") {
+      Master._instance = new Master(endpoints, options);
+    }
+    return Master._instance;
+  }
+
+  public close(): void {
+    this._connection.close();
+  }
+
+  public addConnectionListener(
+    event: Event,
+    listener: (result?: any) => void
+  ): void {
+    this._connection.addListener(event, listener);
+  }
+
+  public deleteConnectionListener(
+    event: Event,
+    listener: (result?: any) => void
+  ): void {
+    this._connection.addListener(event, listener);
   }
 
   public async request(msg: ProtocolMsg) {
-    await this._condition.wait(this._options.defaultRoundTimeout, msg);
-    if (this._connection === null) {
-      throw new Error("Connection was lost");
-    }
+    await this._connection.waitOpen();
     return await this._connection.request(msg).wait();
-  }
-
-  private _connectToMaster(): void {
-    this._connection = new Connection(this._nextEndpoint(), this._options);
-    this._connection.addListener(
-      Event.ON_CONNECTED,
-      this._onConnectToMasterDone.bind(this)
-    );
-    this._connection.addListener(
-      Event.ON_ERROR,
-      this._onConnectToMasterFailed.bind(this)
-    );
-  }
-
-  private _disconnectFromMaster() {
-    if (!this._connection) {
-      return;
-    }
-    this._connection.deleteListener(
-      Event.ON_CONNECTED,
-      this._onConnectToMasterDone.bind(this)
-    );
-    this._connection.deleteListener(
-      Event.ON_ERROR,
-      this._onConnectToMasterFailed.bind(this)
-    );
-    this._connection.close();
-    this._connection = null;
-  }
-
-  private _onConnectToMasterDone() {
-    this._condition.notify();
-  }
-
-  private _onConnectToMasterFailed(code: Code) {
-    if (code === Code.FAILED_TO_CONNECT) {
-      this._disconnectFromMaster();
-      setTimeout(() => this._connectToMaster(), 1000);
-    }
-  }
-
-  private _nextEndpoint() {
-    this._endpoint_index += 1;
-    if (this._endpoint_index >= this._endpoints.length) {
-      this._endpoint_index = 0;
-    }
-    return this._endpoints[this._endpoint_index];
   }
 }
 

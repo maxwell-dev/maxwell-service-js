@@ -1,6 +1,6 @@
 {
   "name": "maxwell-server-js",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Maxwell server implementation for js/ts.",
   "author": "Chaoqian Xu <chaoranxu@gmail.com>",
   "license": "MIT",
@@ -21,8 +21,9 @@
   ],
   "repository": "https://github.com/maxwell-dev/maxwell-server-js.git",
   "dependencies": {
+    "lru-cache": "^10.0.0",
     "maxwell-protocol": "https://github.com/maxwell-dev/maxwell-protocol-js.git#v1.1.1",
-    "maxwell-utils": "https://github.com/maxwell-dev/maxwell-utils-js.git#v0.5.2",
+    "maxwell-utils": "https://github.com/maxwell-dev/maxwell-utils-js.git#v0.6.0",
     "ws": "8.13.0"
   },
   "devDependencies": {

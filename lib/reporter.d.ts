@@ -4,5 +4,7 @@ export declare class Reporter {
     private _server;
     constructor(master: Master, server: Server);
     start(): Promise<void>;
-    private _createAddRoutes;
+    private _onConnected;
+    private _registerServer;
+    private _addRoutes;
 }

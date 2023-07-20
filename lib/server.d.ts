@@ -7,11 +7,11 @@ export interface Request {
     };
 }
 export interface Reply {
-    error?: {
+    error: {
         code: number;
         desc: string;
     };
-    payload: any;
+    payload?: any;
 }
 export type Handler = ((req: Request) => Reply) | ((req: Request) => Promise<Reply>);
 export interface Options {

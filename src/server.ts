@@ -13,11 +13,11 @@ export interface Request {
 }
 
 export interface Reply {
-  error?: {
+  error: {
     code: number;
     desc: string;
   };
-  payload: any;
+  payload?: any;
 }
 
 export type Handler =
@@ -112,26 +112,26 @@ export class Server {
               )
             );
           } else {
-            const rep = await handler({
-              payload: JSON.parse(req.payload),
-              header: req.header,
-            });
-            if (typeof rep.error === "undefined") {
+            try {
+              const rep = await handler({
+                payload: JSON.parse(req.payload),
+                header: req.header,
+              });
               ws.send(
                 encode_msg(
                   new msg_types.req_rep_t({
-                    payload: JSON.stringify(rep.payload),
+                    payload: JSON.stringify(rep),
                     conn0Ref: req.conn0Ref,
                     ref: req.ref,
                   })
                 )
               );
-            } else {
+            } catch (e) {
               ws.send(
                 encode_msg(
                   new msg_types.error2_rep_t({
-                    code: rep.error.code,
-                    desc: rep.error.desc,
+                    code: 2,
+                    desc: `Failed to handle req: ${req}, path: ${req.path}`,
                     conn0Ref: req.conn0Ref,
                     ref: req.ref,
                   })

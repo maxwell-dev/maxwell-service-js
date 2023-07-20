@@ -26,7 +26,7 @@ const server = new Server({
 });
 
 server.addWsRoute("/hello", async (req: Request) => {
-  const reply: Reply = { payload: req };
+  const reply: Reply = { error: { code: 0, desc: "" }, payload: req };
   return reply;
 });
 

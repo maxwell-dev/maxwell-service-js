@@ -1,19 +1,4 @@
-export interface Request {
-    payload: any;
-    header?: {
-        agent?: string;
-        endpoint?: string;
-        token?: string;
-    };
-}
-export interface Reply {
-    error: {
-        code: number;
-        desc: string;
-    };
-    payload?: any;
-}
-export type Handler = ((req: Request) => Reply) | ((req: Request) => Promise<Reply>);
+import { Service } from "./internal";
 export interface Options {
     master_endpoints: string[];
     host?: string;
@@ -23,13 +8,11 @@ export interface Options {
     path?: string;
 }
 export declare class Server {
+    private _service;
     private _options;
     private _wss;
-    private _wsRoutes;
-    constructor(options: Options);
-    addWsRoute(path: string, handler: Handler): void;
+    constructor(service: Service, options: Options);
     getOptions(): Options;
-    getWsRoutes(): Map<string, Handler>;
     start(): void;
     stop(): void;
     private static _buildOptions;

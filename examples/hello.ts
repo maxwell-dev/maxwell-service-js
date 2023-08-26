@@ -1,5 +1,5 @@
 import { Options as ConntionOptions } from "maxwell-utils";
-import { Server, Request, Reply, Master, Publisher } from "../src";
+import { Server, Service, Request, Reply, Master, Publisher } from "../src";
 
 const master = Master.singleton(["localhost:8081"], new ConntionOptions());
 const publisher = new Publisher(master);
@@ -20,14 +20,14 @@ async function loop() {
 }
 setTimeout(loop, 1000);
 
-const server = new Server({
-  master_endpoints: ["localhost:8081"],
-  port: 30000,
-});
-
-server.addWsRoute("/hello", async (req: Request) => {
+const service = new Service();
+service.addWsRoute("/hello", async (req: Request) => {
   const reply: Reply = { error: { code: 0, desc: "" }, payload: req };
   return reply;
 });
 
+const server = new Server(service, {
+  master_endpoints: ["localhost:8081"],
+  port: 30000,
+});
 server.start();

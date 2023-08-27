@@ -1,6 +1,6 @@
 {
   "name": "maxwell-service-js",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "Maxwell service implementation for js/ts.",
   "author": "Chaoqian Xu <chaoranxu@gmail.com>",
   "license": "MIT",
@@ -21,9 +21,9 @@
   ],
   "repository": "https://github.com/maxwell-dev/maxwell-service-js.git",
   "dependencies": {
-    "lru-cache": "^10.0.0",
-    "maxwell-protocol": "https://github.com/maxwell-dev/maxwell-protocol-js.git#v1.2.0",
-    "maxwell-utils": "https://github.com/maxwell-dev/maxwell-utils-js.git#v0.8.1",
+    "lru-cache": "10.0.1",
+    "maxwell-protocol": "https://github.com/maxwell-dev/maxwell-protocol-js.git#v1.2.2",
+    "maxwell-utils": "https://github.com/maxwell-dev/maxwell-utils-js.git#v0.8.2",
     "ws": "8.13.0"
   },
   "devDependencies": {

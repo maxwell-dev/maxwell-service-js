@@ -54,8 +54,8 @@ export class Service {
         ws.send(
           encode_msg(
             new msg_types.error2_rep_t({
-              code: 1,
-              desc: `Failed to find handler for path: ${req.path}`,
+              code: msg_types.error_code_t.UNKNOWN_PATH,
+              desc: `Unknown path: ${req.path}`,
               conn0Ref: req.conn0Ref,
               ref: req.ref,
             })
@@ -63,7 +63,7 @@ export class Service {
         );
       } else {
         try {
-          const rep = await handler({
+          const rep: Reply = await handler({
             payload: JSON.parse(req.payload),
             header: req.header,
           });
@@ -80,7 +80,7 @@ export class Service {
           ws.send(
             encode_msg(
               new msg_types.error2_rep_t({
-                code: 2,
+                code: msg_types.error_code_t.SERVICE_ERROR,
                 desc: `Failed to handle req: ${req}, path: ${req.path}`,
                 conn0Ref: req.conn0Ref,
                 ref: req.ref,
@@ -95,7 +95,7 @@ export class Service {
       ws.send(
         encode_msg(
           new msg_types.error2_rep_t({
-            code: 1,
+            code: msg_types.error_code_t.UNKNOWN_MSG,
             desc: `Received unknown msg: ${req}`,
             conn0Ref: req.conn0Ref,
             ref: req.ref,

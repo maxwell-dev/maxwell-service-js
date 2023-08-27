@@ -22,7 +22,7 @@ setTimeout(loop, 1000);
 
 const service = new Service();
 service.addWsRoute("/hello", async (req: Request) => {
-  const reply: Reply = { error: { code: 0, desc: "" }, payload: req };
+  const reply: Reply = { error: { code: 0, desc: "" }, payload: req.payload };
   return reply;
 });
 

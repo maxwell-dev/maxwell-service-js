@@ -21,8 +21,9 @@ async function loop() {
 setTimeout(loop, 1000);
 
 const service = new Service();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 service.addWsRoute("/hello", async (req: Request) => {
-  const reply: Reply = { error: { code: 0, desc: "" }, payload: req.payload };
+  const reply: Reply = { error: { code: 0, desc: "" }, payload: "javascript" };
   return reply;
 });
 

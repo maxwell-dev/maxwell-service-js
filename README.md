@@ -1,3 +1,3 @@
-# maxwell-server-js
+# maxwell-service-js
 
-The server role of Maxwell system, written in TypeScript.
+The service role of Maxwell system, written in TypeScript.

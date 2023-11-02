@@ -1,36 +1,40 @@
 import { msg_types } from "maxwell-protocol";
 import { Event } from "maxwell-utils";
-import { Master, Options, Service } from "./internal";
+import { MasterClient, Options, Service } from "./internal";
 
 export class Registrar {
-  private _master: Master;
-  private _options: Options;
   private _service: Service;
+  private _options: Options;
+  private _masterClient: MasterClient;
 
-  constructor(master: Master, service: Service, options: Options) {
-    this._master = master;
-    this._options = options;
+  constructor(service: Service, options: Options) {
     this._service = service;
-  }
-
-  public async start() {
-    this._master.addConnectionListener(
+    this._options = options;
+    this._masterClient = MasterClient.singleton(options);
+    this._masterClient.addConnectionListener(
       Event.ON_CONNECTED,
-      this._onConnected.bind(this)
+      this._onConnectedToMaster.bind(this)
     );
   }
 
-  private async _onConnected() {
-    await this._registerService();
-    await this._setRoutes();
+  private async _onConnectedToMaster() {
+    if (await this._registerService()) {
+      await this._setRoutes();
+    }
   }
 
   private async _registerService() {
     const req = new msg_types.register_service_req_t({
-      httpPort: this._options.port,
+      httpPort: this._options.server.port,
     });
-    const res = await this._master.request(req);
-    console.info("Register service reply: ", res);
+    try {
+      const res = await this._masterClient.request(req);
+      console.info("Successfully to register service: %s", res);
+      return true;
+    } catch (e) {
+      console.error("Failed to register service: %s", e);
+      return false;
+    }
   }
 
   private async _setRoutes() {
@@ -38,7 +42,12 @@ export class Registrar {
     const req = new msg_types.set_routes_req_t({
       paths: Array.from(routes.keys()),
     });
-    const res = await this._master.request(req);
-    console.info("Set routes reply: ", res);
+
+    try {
+      const res = await this._masterClient.request(req);
+      console.info("Successfully to set routes: %s", res);
+    } catch (e) {
+      console.error("Failed to set routes: %s", e);
+    }
   }
 }

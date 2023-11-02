@@ -1,42 +1,23 @@
 import { WebSocketServer } from "ws";
-import { Options as ConntionOptions } from "maxwell-utils";
-import { Master, Registrar, Service } from "./internal";
-
-export interface Options {
-  master_endpoints: string[];
-  host?: string;
-  port?: number;
-  maxPayload?: number;
-  backlog?: number;
-  path?: string;
-}
+import { Registrar, Service, Options } from "./internal";
 
 export class Server {
   private _service: Service;
   private _options: Options;
   private _wss: WebSocketServer;
 
-  constructor(service: Service, options: Options) {
+  public constructor(service: Service, options: Options) {
     this._service = service;
-    this._options = Server._buildOptions(options);
-    this._wss = new WebSocketServer(options);
-  }
-
-  public getOptions() {
-    return this._options;
+    this._options = options;
+    this._wss = new WebSocketServer(options.server);
   }
 
   public start() {
-    const master = Master.singleton(
-      this._options.master_endpoints,
-      new ConntionOptions()
-    );
-    const registrar = new Registrar(master, this._service, this._options);
-    registrar.start();
+    new Registrar(this._service, this._options);
 
     this._wss.on("listening", () => {
       console.info(
-        `Server is listening on ${this._options.host}:${this._options.port}`
+        `Server is listening on ${this._options.server.host}:${this._options.server.port}`
       );
     });
 
@@ -77,23 +58,6 @@ export class Server {
 
   public stop() {
     this._wss.close();
-  }
-
-  private static _buildOptions(options: Options): Options {
-    if (typeof options.host === "undefined") {
-      options.host = "0.0.0.0";
-    }
-    if (typeof options.port === "undefined") {
-      options.port = 9091;
-    }
-    if (typeof options.maxPayload === "undefined") {
-      options.maxPayload = 104857600;
-    }
-    if (typeof options.backlog === "undefined") {
-      options.backlog = 1024;
-    }
-    options.path = "/$ws";
-    return options;
   }
 }
 

@@ -25,7 +25,7 @@ export type Handler =
 export class Service {
   private _wsRoutes: Map<string, Handler>;
 
-  constructor() {
+  public constructor() {
     this._wsRoutes = new Map();
   }
 

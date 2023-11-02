@@ -1,18 +1,29 @@
-import { Event, Connection, Options, ProtocolMsg } from "maxwell-utils";
+import { AbortablePromise } from "@xuchaoqian/abortable-promise";
+import { Event, MultiAltEndpointsConnection, ProtocolMsg } from "maxwell-utils";
+import { Options } from "./internal";
 
-export class Master {
-  private _connection: Connection;
-  private static _instance: Master;
+export class MasterClient {
+  private _options: Options;
+  private _endpoints: string[];
+  private _currentEndpointIndex: number;
+  private _connection: MultiAltEndpointsConnection;
+  private static _instance: MasterClient;
 
-  constructor(endpoints: string[], options: Options) {
-    this._connection = new Connection(endpoints, options);
+  public constructor(options: Options) {
+    this._options = options;
+    this._endpoints = options.server.master_endpoints;
+    this._currentEndpointIndex = this._endpoints.length - 1;
+    this._connection = new MultiAltEndpointsConnection(
+      this._pickEndpoint.bind(this),
+      options.connection
+    );
   }
 
-  static singleton(endpoints: string[], options: Options): Master {
-    if (typeof Master._instance === "undefined") {
-      Master._instance = new Master(endpoints, options);
+  public static singleton(options: Options): MasterClient {
+    if (typeof MasterClient._instance === "undefined") {
+      MasterClient._instance = new MasterClient(options);
     }
-    return Master._instance;
+    return MasterClient._instance;
   }
 
   public close(): void {
@@ -21,22 +32,37 @@ export class Master {
 
   public addConnectionListener(
     event: Event,
-    listener: (result?: any) => void
+    listener: (...args: any[]) => void
   ): void {
     this._connection.addListener(event, listener);
   }
 
   public deleteConnectionListener(
     event: Event,
-    listener: (result?: any) => void
+    listener: (...args: any[]) => void
   ): void {
-    this._connection.addListener(event, listener);
+    this._connection.deleteListener(event, listener);
   }
 
-  public async request(msg: ProtocolMsg) {
-    await this._connection.waitOpen();
-    return await this._connection.request(msg).wait();
+  public request(msg: ProtocolMsg): AbortablePromise<ProtocolMsg> {
+    return this._connection
+      .waitOpen(this._options.connection.waitOpenTimeout)
+      .then((connection) => {
+        return connection
+          .request(msg, this._options.connection.defaultRoundTimeout)
+          .then((result) => result);
+      });
+  }
+
+  private _pickEndpoint(): AbortablePromise<string> {
+    this._currentEndpointIndex++;
+    if (this._currentEndpointIndex >= this._endpoints.length) {
+      this._currentEndpointIndex = 0;
+    }
+    return AbortablePromise.resolve(
+      this._endpoints[this._currentEndpointIndex]
+    );
   }
 }
 
-export default Master;
+export default MasterClient;

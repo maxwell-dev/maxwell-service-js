@@ -1,9 +1,15 @@
-import { Options as ConntionOptions } from "maxwell-utils";
-import { Server, Service, Request, Reply, Master, Publisher } from "../src";
+import {
+  Server,
+  Service,
+  Request,
+  Reply,
+  Publisher,
+  OPTIONS as OPTIONS_MUT,
+} from "../src";
 
-const master = Master.singleton(["localhost:8081"], new ConntionOptions());
-const publisher = new Publisher(master);
+const OPTIONS = Object.freeze(OPTIONS_MUT);
 
+const publisher = new Publisher(OPTIONS);
 async function loop() {
   for (let i = 0; i < 100; i++) {
     try {
@@ -11,9 +17,9 @@ async function loop() {
         "topic_100",
         new TextEncoder().encode("hello")
       );
-      console.log("successufly publish: ", rep);
+      console.log("Successufly to publish: %s", rep);
     } catch (e) {
-      console.error("publish error: ", e);
+      console.error("Failed to publish: %s", e);
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
@@ -27,8 +33,5 @@ service.addWsRoute("/hello", async (req: Request) => {
   return reply;
 });
 
-const server = new Server(service, {
-  master_endpoints: ["localhost:8081"],
-  port: 30000,
-});
+const server = new Server(service, OPTIONS);
 server.start();

@@ -1,4 +1,4 @@
-import { IOptions as IMaxwellConnectionOptions } from "maxwell-utils";
+import { IOptions as ICommonConnectionOptions } from "maxwell-utils";
 
 export interface IOptions {
   server: IServerOptions;
@@ -28,7 +28,7 @@ export interface IPublisherOptions {
   lru_cache_ttl?: number;
 }
 
-export interface IConnectionOptions extends IMaxwellConnectionOptions {
+export interface IConnectionOptions extends ICommonConnectionOptions {
   waitOpenTimeout?: number;
 }
 

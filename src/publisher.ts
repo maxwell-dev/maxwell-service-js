@@ -31,7 +31,7 @@ export class Publisher {
       connections = [];
       for (
         let i = 0;
-        i < this._options.publisher.connection_pool_slot_size;
+        i < this._options.publisher.connection_slot_size;
         i++
       ) {
         const connection = new Connection(endpoint, this._options.connection);

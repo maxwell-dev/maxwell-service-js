@@ -13,8 +13,8 @@ export class TopicLocatlizer {
     this._options = options;
     this._checksum = 0;
     this._cache = new LRUCache({
-      max: this._options.publisher.lru_cache_size,
-      ttl: this._options.publisher.lru_cache_ttl,
+      max: this._options.publisher.endpoint_cache_size,
+      ttl: this._options.publisher.endpoint_cache_ttl,
       updateAgeOnGet: true,
       updateAgeOnHas: true,
       fetchMethod: async (topic /*oldValue, { signal }*/) => {

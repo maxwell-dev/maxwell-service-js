@@ -22,10 +22,10 @@ export interface IServerOptions {
 }
 
 export interface IPublisherOptions {
-  connection_pool_slot_size?: number;
+  connection_slot_size?: number;
   maxContinuousDisconnectedTimes?: number;
-  lru_cache_size?: number;
-  lru_cache_ttl?: number;
+  endpoint_cache_size?: number;
+  endpoint_cache_ttl?: number;
 }
 
 export interface IConnectionOptions extends ICommonConnectionOptions {
@@ -42,10 +42,10 @@ export const OPTIONS: Options = {
     path: "/$ws",
   },
   publisher: {
-    connection_pool_slot_size: 1,
+    connection_slot_size: 1,
     maxContinuousDisconnectedTimes: 5,
-    lru_cache_size: 50000,
-    lru_cache_ttl: 1000 * 60 * 10,
+    endpoint_cache_size: 50000,
+    endpoint_cache_ttl: 1000 * 60 * 10,
   },
   connection: {
     waitOpenTimeout: 3000,

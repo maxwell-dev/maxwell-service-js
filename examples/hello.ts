@@ -11,17 +11,17 @@ const OPTIONS = Object.freeze(OPTIONS_MUT);
 
 const publisher = new Publisher(OPTIONS);
 async function loop() {
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 100000000; i++) {
     try {
       const rep = await publisher.publish(
-        "topic_100",
+        "topic_1",
         new TextEncoder().encode("hello")
       );
       console.log("Successufly to publish: %s", rep);
     } catch (e) {
       console.error("Failed to publish: %s", e);
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
 setTimeout(loop, 1000);

@@ -29,7 +29,7 @@ setTimeout(loop, 1000);
 const service = new Service();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 service.addWsRoute("/hello", async (req: Request) => {
-  const reply: Reply = { payload: "javascript" };
+  const reply: Reply = { payload: "world" };
   return reply;
 });
 

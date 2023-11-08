@@ -51,10 +51,10 @@ export const OPTIONS: Options = {
     waitOpenTimeout: 3000,
     reconnectDelay: 3000,
     heartbeatInterval: 10000,
-    defaultRoundTimeout: 5000,
+    roundTimeout: 5000,
     retryRouteCount: 0,
     sslEnabled: false,
-    debugRoundEnabled: false,
+    roundDebugEnabled: false,
   },
 };
 

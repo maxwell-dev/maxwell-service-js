@@ -49,7 +49,7 @@ export class MasterClient {
       .waitOpen(this._options.connection.waitOpenTimeout)
       .then((connection) => {
         return connection
-          .request(msg, this._options.connection.defaultRoundTimeout)
+          .request(msg, this._options.connection.roundTimeout)
           .then((result) => result);
       });
   }

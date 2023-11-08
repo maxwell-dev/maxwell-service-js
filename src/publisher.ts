@@ -29,11 +29,7 @@ export class Publisher {
     let connections = this._connections.get(endpoint);
     if (typeof connections === "undefined") {
       connections = [];
-      for (
-        let i = 0;
-        i < this._options.publisher.connection_slot_size;
-        i++
-      ) {
+      for (let i = 0; i < this._options.publisher.connectionSlotSize; i++) {
         const connection = new Connection(endpoint, this._options.connection);
         connection.addListener(
           Event.ON_DISCONNECTED,

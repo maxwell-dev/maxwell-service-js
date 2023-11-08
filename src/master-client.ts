@@ -11,7 +11,7 @@ export class MasterClient {
 
   public constructor(options: Options) {
     this._options = options;
-    this._endpoints = options.server.master_endpoints;
+    this._endpoints = options.server.masterEndpoints;
     this._currentEndpointIndex = this._endpoints.length - 1;
     this._connection = new MultiAltEndpointsConnection(
       this._pickEndpoint.bind(this),

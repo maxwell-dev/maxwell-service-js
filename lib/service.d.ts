@@ -1,14 +1,14 @@
 import { WebSocket } from "ws";
 export interface Request {
-    payload: any;
-    header?: {
-        agent?: string;
-        endpoint?: string;
-        token?: string;
+    readonly payload: any;
+    readonly header?: {
+        readonly agent?: string;
+        readonly endpoint?: string;
+        readonly token?: string;
     };
 }
 export interface Reply {
-    error: {
+    error?: {
         code: number;
         desc: string;
     };

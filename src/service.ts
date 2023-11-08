@@ -2,16 +2,16 @@ import { WebSocket } from "ws";
 import { msg_types, encode_msg, decode_msg } from "maxwell-protocol";
 
 export interface Request {
-  payload: any;
-  header?: {
-    agent?: string;
-    endpoint?: string;
-    token?: string;
+  readonly payload: any;
+  readonly header?: {
+    readonly agent?: string;
+    readonly endpoint?: string;
+    readonly token?: string;
   };
 }
 
 export interface Reply {
-  error: {
+  error?: {
     code: number;
     desc: string;
   };
@@ -67,15 +67,31 @@ export class Service {
             payload: JSON.parse(req.payload),
             header: req.header,
           });
-          ws.send(
-            encode_msg(
-              new msg_types.req_rep_t({
-                payload: JSON.stringify(rep),
-                conn0Ref: req.conn0Ref,
-                ref: req.ref,
-              })
-            )
-          );
+          if (
+            typeof rep.error !== "undefined" &&
+            rep.error.code !== msg_types.error_code_t.OK
+          ) {
+            ws.send(
+              encode_msg(
+                new msg_types.error2_rep_t({
+                  code: rep.error.code,
+                  desc: rep.error.desc,
+                  conn0Ref: req.conn0Ref,
+                  ref: req.ref,
+                })
+              )
+            );
+          } else {
+            ws.send(
+              encode_msg(
+                new msg_types.req_rep_t({
+                  payload: JSON.stringify(rep.payload),
+                  conn0Ref: req.conn0Ref,
+                  ref: req.ref,
+                })
+              )
+            );
+          }
         } catch (e) {
           ws.send(
             encode_msg(

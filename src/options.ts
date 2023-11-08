@@ -1,4 +1,4 @@
-import { IOptions as ICommonConnectionOptions } from "maxwell-utils";
+import { IOptions as IBasicConnectionOptions } from "maxwell-utils";
 
 export interface IOptions {
   server: IServerOptions;
@@ -13,28 +13,28 @@ export type Options = {
 };
 
 export interface IServerOptions {
-  master_endpoints: string[];
+  masterEndpoints: string[];
   host?: string;
   port?: number;
   maxPayload?: number;
   backlog?: number;
-  path?: string;
+  readonly path?: string;
 }
 
 export interface IPublisherOptions {
-  connection_slot_size?: number;
+  connectionSlotSize?: number;
   maxContinuousDisconnectedTimes?: number;
-  endpoint_cache_size?: number;
-  endpoint_cache_ttl?: number;
+  endpointCacheSize?: number;
+  endpointCacheTtl?: number;
 }
 
-export interface IConnectionOptions extends ICommonConnectionOptions {
+export interface IConnectionOptions extends IBasicConnectionOptions {
   waitOpenTimeout?: number;
 }
 
 export const OPTIONS: Options = {
   server: {
-    master_endpoints: ["localhost:8081"],
+    masterEndpoints: ["localhost:8081"],
     host: "0.0.0.0",
     port: 30000,
     maxPayload: 104857600,
@@ -42,10 +42,10 @@ export const OPTIONS: Options = {
     path: "/$ws",
   },
   publisher: {
-    connection_slot_size: 1,
+    connectionSlotSize: 1,
     maxContinuousDisconnectedTimes: 5,
-    endpoint_cache_size: 50000,
-    endpoint_cache_ttl: 1000 * 60 * 10,
+    endpointCacheSize: 50000,
+    endpointCacheTtl: 1000 * 60 * 10,
   },
   connection: {
     waitOpenTimeout: 3000,

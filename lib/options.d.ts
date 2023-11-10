@@ -1,8 +1,8 @@
 import { IOptions as IBasicConnectionOptions } from "maxwell-utils";
 export interface IOptions {
-    server: IServerOptions;
-    publisher: IPublisherOptions;
-    connection: IConnectionOptions;
+    server?: IServerOptions;
+    publisher?: IPublisherOptions;
+    connection?: IConnectionOptions;
 }
 export type Options = {
     server: Required<IServerOptions>;
@@ -51,7 +51,7 @@ export declare function buildDefaultOptions(): {
         roundDebugEnabled: boolean;
     };
 };
-export declare function buildOptions(options: Partial<IOptions>): Options;
+export declare function buildOptions(options: IOptions): Options;
 declare const _default: {
     server: {
         masterEndpoints: string[];

@@ -1,9 +1,9 @@
 import { IOptions as IBasicConnectionOptions } from "maxwell-utils";
 
 export interface IOptions {
-  server: IServerOptions;
-  publisher: IPublisherOptions;
-  connection: IConnectionOptions;
+  server?: IServerOptions;
+  publisher?: IPublisherOptions;
+  connection?: IConnectionOptions;
 }
 
 export type Options = {
@@ -60,7 +60,7 @@ export function buildDefaultOptions() {
   };
 }
 
-export function buildOptions(options: Partial<IOptions>): Options {
+export function buildOptions(options: IOptions): Options {
   const optionDraft = buildDefaultOptions();
   if (typeof options.server !== "undefined") {
     if (typeof options.server.masterEndpoints !== "undefined") {

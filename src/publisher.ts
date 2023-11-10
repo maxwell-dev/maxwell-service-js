@@ -10,7 +10,7 @@ export class Publisher {
 
   public constructor(options: Options) {
     this._options = options;
-    this._topicLocatlizer = new TopicLocatlizer(options);
+    this._topicLocatlizer = new TopicLocatlizer(this._options);
     this._connections = new Map(); // endpoint => [connection0, connection1, ...]
     this._continuousDisconnectedTimes = 0;
   }

@@ -26,5 +26,55 @@ export interface IPublisherOptions {
 export interface IConnectionOptions extends IBasicConnectionOptions {
     waitOpenTimeout?: number;
 }
-export declare const OPTIONS: Options;
-export default OPTIONS;
+export declare function buildDefaultOptions(): {
+    server: {
+        masterEndpoints: string[];
+        host: string;
+        port: number;
+        maxPayload: number;
+        backlog: number;
+        path: string;
+    };
+    publisher: {
+        connectionSlotSize: number;
+        maxContinuousDisconnectedTimes: number;
+        endpointCacheSize: number;
+        endpointCacheTtl: number;
+    };
+    connection: {
+        waitOpenTimeout: number;
+        reconnectDelay: number;
+        heartbeatInterval: number;
+        roundTimeout: number;
+        retryRouteCount: number;
+        sslEnabled: boolean;
+        roundDebugEnabled: boolean;
+    };
+};
+export declare function buildOptions(options: Partial<IOptions>): Options;
+declare const _default: {
+    server: {
+        masterEndpoints: string[];
+        host: string;
+        port: number;
+        maxPayload: number;
+        backlog: number;
+        path: string;
+    };
+    publisher: {
+        connectionSlotSize: number;
+        maxContinuousDisconnectedTimes: number;
+        endpointCacheSize: number;
+        endpointCacheTtl: number;
+    };
+    connection: {
+        waitOpenTimeout: number;
+        reconnectDelay: number;
+        heartbeatInterval: number;
+        roundTimeout: number;
+        retryRouteCount: number;
+        sslEnabled: boolean;
+        roundDebugEnabled: boolean;
+    };
+};
+export default _default;

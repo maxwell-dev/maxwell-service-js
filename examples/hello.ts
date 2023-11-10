@@ -4,10 +4,10 @@ import {
   Request,
   Reply,
   Publisher,
-  OPTIONS as OPTIONS_MUT,
+  buildDefaultOptions,
 } from "../src";
 
-const OPTIONS = Object.freeze(OPTIONS_MUT);
+const OPTIONS = buildDefaultOptions();
 
 const publisher = new Publisher(OPTIONS);
 async function loop() {

@@ -1,0 +1,33 @@
+{
+  "name": "maxwell-service-example",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "main": "hello.ts",
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "compile-watch": "tsc -w",
+    "run-watch": "node --watch-path=./src ./dist/example/src/main.js",
+    "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:compile-watch\" \"npm:run-watch\""
+  },
+  "dependencies": {
+    "@fastify/autoload": "^5.8.0",
+    "@fastify/multipart": "^8.2.0",
+    "@fastify/sensible": "5.6.0",
+    "@fastify/swagger": "^8.14.0",
+    "@fastify/swagger-ui": "^3.0.0",
+    "@fastify/type-provider-json-schema-to-ts": "^3.0.0",
+    "fastify": "^4.26.2",
+    "fastify-plugin": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "concurrently": "^8.2.2",
+    "fastify-tsconfig": "^2.0.0",
+    "pino-pretty": "^11.0.0",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

@@ -11,11 +11,11 @@ export class MasterClient {
 
   public constructor(options: Options) {
     this._options = options;
-    this._endpoints = options.server.masterEndpoints;
+    this._endpoints = options.masterClientOptions.masterEndpoints;
     this._currentEndpointIndex = this._endpoints.length - 1;
     this._connection = new MultiAltEndpointsConnection(
       this._pickEndpoint.bind(this),
-      options.connection
+      options.masterClientOptions.connectionOptions
     );
   }
 
@@ -46,10 +46,15 @@ export class MasterClient {
 
   public request(msg: ProtocolMsg): AbortablePromise<ProtocolMsg> {
     return this._connection
-      .waitOpen(this._options.connection.waitOpenTimeout)
+      .waitOpen(
+        this._options.masterClientOptions.connectionOptions.waitOpenTimeout
+      )
       .then((connection) => {
         return connection
-          .request(msg, this._options.connection.roundTimeout)
+          .request(
+            msg,
+            this._options.masterClientOptions.connectionOptions.roundTimeout
+          )
           .then((result) => result);
       });
   }

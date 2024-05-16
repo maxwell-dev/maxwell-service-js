@@ -10,9 +10,6 @@ install:
 build:
 	${NPM} run build
 
-serve:
-	${NPM} run serve
-
 test:
 	${NPM} run test
 

@@ -1,10 +1,12 @@
-import { Options, Service } from "./internal";
+import { FastifyInstance } from "fastify";
+import { Options } from "./internal";
 export declare class Registrar {
-    private _service;
+    private _fastify;
     private _options;
     private _masterClient;
-    constructor(service: Service, options: Options);
+    constructor(service: FastifyInstance, options: Options);
     private _onConnectedToMaster;
     private _registerService;
     private _setRoutes;
+    private _buildSetRoutesReq;
 }

@@ -1,24 +1,100 @@
+import * as http from "node:http";
+import { FastifyHttpOptions, FastifyListenOptions } from "fastify";
+import { PrettyOptions } from "pino-pretty";
 import { IOptions as IBasicConnectionOptions } from "maxwell-utils";
 
 export interface IOptions {
-  server?: IServerOptions;
-  publisher?: IPublisherOptions;
-  connection?: IConnectionOptions;
+  serverOptions?: IServerOptions;
+  publisherOptions?: IPublisherOptions;
+  masterClientOptions?: IMasterClientOptions;
 }
 
-export type Options = {
-  server: Required<IServerOptions>;
-  publisher: Required<IPublisherOptions>;
-  connection: Required<IConnectionOptions>;
-};
+export class Options implements IOptions {
+  readonly serverOptions: ServerOptions;
+  readonly publisherOptions: PublisherOptions;
+  readonly masterClientOptions: MasterClientOptions;
+  constructor(options?: IOptions) {
+    if (typeof options === "undefined") {
+      options = {};
+    }
+    this.serverOptions = new ServerOptions(options.serverOptions);
+    this.publisherOptions = new PublisherOptions(options.publisherOptions);
+    this.masterClientOptions = new MasterClientOptions(
+      options.masterClientOptions
+    );
+  }
+}
 
-export interface IServerOptions {
-  masterEndpoints: string[];
-  host?: string;
-  port?: number;
+export interface IServerOptions
+  extends FastifyHttpOptions<http.Server>,
+    FastifyListenOptions {
+  wsOptions?: IWsOptions;
+  loggerOptions?: PrettyOptions;
+}
+
+export class ServerOptions implements IServerOptions {
+  readonly host: string;
+  readonly port: number;
+  readonly bodyLimit: number;
+  readonly backlog: number;
+  readonly wsOptions: WsOptions;
+  readonly logger: any; // use this field to be compitable with fastify API
+
+  constructor(options?: IServerOptions) {
+    if (typeof options === "undefined") {
+      options = {};
+    }
+    if (typeof options.host === "undefined") {
+      options.host = "0.0.0.0";
+    }
+    if (typeof options.port === "undefined") {
+      options.port = 30000;
+    }
+    if (typeof options.bodyLimit === "undefined") {
+      options.bodyLimit = 104857600;
+    }
+    if (typeof options.backlog === "undefined") {
+      options.backlog = 2048;
+    }
+    if (typeof options.loggerOptions === "undefined") {
+      options.logger = {
+        transport: { target: "pino-pretty" },
+      };
+    } else {
+      options.logger = {
+        transport: { target: "pino-pretty", options: options.loggerOptions },
+      };
+    }
+    this.host = options.host;
+    this.port = options.port;
+    this.bodyLimit = options.bodyLimit;
+    this.backlog = options.backlog;
+    this.wsOptions = new WsOptions(options.wsOptions);
+    this.logger = options.logger;
+  }
+}
+
+export interface IWsOptions {
   maxPayload?: number;
-  backlog?: number;
-  readonly path?: string;
+  perMessageDeflate?: boolean;
+}
+
+export class WsOptions implements IWsOptions {
+  readonly maxPayload: number;
+  readonly perMessageDeflate: boolean;
+  constructor(options?: IWsOptions) {
+    if (typeof options === "undefined") {
+      options = {};
+    }
+    if (typeof options.maxPayload === "undefined") {
+      options.maxPayload = 104857600;
+    }
+    if (typeof options.perMessageDeflate === "undefined") {
+      options.perMessageDeflate = false;
+    }
+    this.maxPayload = options.maxPayload;
+    this.perMessageDeflate = options.perMessageDeflate;
+  }
 }
 
 export interface IPublisherOptions {
@@ -26,110 +102,103 @@ export interface IPublisherOptions {
   maxContinuousDisconnectedTimes?: number;
   endpointCacheSize?: number;
   endpointCacheTtl?: number;
+  connectionOptions?: IConnectionOptions;
+}
+
+export class PublisherOptions implements IPublisherOptions {
+  readonly connectionSlotSize: number;
+  readonly maxContinuousDisconnectedTimes: number;
+  readonly endpointCacheSize: number;
+  readonly endpointCacheTtl: number;
+  readonly connectionOptions: ConnectionOptions;
+  constructor(options?: IPublisherOptions) {
+    if (typeof options === "undefined") {
+      options = {};
+    }
+    if (typeof options.connectionSlotSize === "undefined") {
+      options.connectionSlotSize = 1;
+    }
+    if (typeof options.maxContinuousDisconnectedTimes === "undefined") {
+      options.maxContinuousDisconnectedTimes = 5;
+    }
+    if (typeof options.endpointCacheSize === "undefined") {
+      options.endpointCacheSize = 50000;
+    }
+    if (typeof options.endpointCacheTtl === "undefined") {
+      options.endpointCacheTtl = 1000 * 60 * 10;
+    }
+    this.connectionSlotSize = options.connectionSlotSize;
+    this.maxContinuousDisconnectedTimes =
+      options.maxContinuousDisconnectedTimes;
+    this.endpointCacheSize = options.endpointCacheSize;
+    this.endpointCacheTtl = options.endpointCacheTtl;
+    this.connectionOptions = new ConnectionOptions(options.connectionOptions);
+  }
+}
+
+export interface IMasterClientOptions {
+  masterEndpoints?: string[];
+  connectionOptions?: IConnectionOptions;
+}
+
+export class MasterClientOptions implements IMasterClientOptions {
+  readonly masterEndpoints: string[];
+  readonly connectionOptions: ConnectionOptions;
+  constructor(options?: IMasterClientOptions) {
+    if (typeof options === "undefined") {
+      options = {};
+    }
+    if (typeof options.masterEndpoints === "undefined") {
+      options.masterEndpoints = ["localhost:8081"];
+    }
+    this.masterEndpoints = options.masterEndpoints;
+    this.connectionOptions = new ConnectionOptions(options.connectionOptions);
+  }
 }
 
 export interface IConnectionOptions extends IBasicConnectionOptions {
   waitOpenTimeout?: number;
 }
 
-export function buildDefaultOptions() {
-  return {
-    server: {
-      masterEndpoints: ["localhost:8081"],
-      host: "0.0.0.0",
-      port: 30000,
-      maxPayload: 104857600,
-      backlog: 2048,
-      path: "/$ws",
-    },
-    publisher: {
-      connectionSlotSize: 1,
-      maxContinuousDisconnectedTimes: 5,
-      endpointCacheSize: 50000,
-      endpointCacheTtl: 1000 * 60 * 10,
-    },
-    connection: {
-      waitOpenTimeout: 3000,
-      reconnectDelay: 3000,
-      heartbeatInterval: 10000,
-      roundTimeout: 5000,
-      retryRouteCount: 0,
-      sslEnabled: false,
-      roundDebugEnabled: false,
-    },
-  };
+export class ConnectionOptions implements IConnectionOptions {
+  readonly waitOpenTimeout: number;
+  readonly reconnectDelay: number;
+  readonly heartbeatInterval: number;
+  readonly roundTimeout: number;
+  readonly retryRouteCount: number;
+  readonly sslEnabled: boolean;
+  readonly roundDebugEnabled: boolean;
+  constructor(options?: IConnectionOptions) {
+    if (typeof options === "undefined") {
+      options = {};
+    }
+    if (typeof options.waitOpenTimeout === "undefined") {
+      options.waitOpenTimeout = 3000;
+    }
+    if (typeof options.reconnectDelay === "undefined") {
+      options.reconnectDelay = 3000;
+    }
+    if (typeof options.heartbeatInterval === "undefined") {
+      options.heartbeatInterval = 10000;
+    }
+    if (typeof options.roundTimeout === "undefined") {
+      options.roundTimeout = 5000;
+    }
+    if (typeof options.retryRouteCount === "undefined") {
+      options.retryRouteCount = 0;
+    }
+    if (typeof options.sslEnabled === "undefined") {
+      options.sslEnabled = false;
+    }
+    if (typeof options.roundDebugEnabled === "undefined") {
+      options.roundDebugEnabled = false;
+    }
+    this.waitOpenTimeout = options.waitOpenTimeout;
+    this.reconnectDelay = options.reconnectDelay;
+    this.heartbeatInterval = options.heartbeatInterval;
+    this.roundTimeout = options.roundTimeout;
+    this.retryRouteCount = options.retryRouteCount;
+    this.sslEnabled = options.sslEnabled;
+    this.roundDebugEnabled = options.roundDebugEnabled;
+  }
 }
-
-export function buildOptions(options: IOptions): Options {
-  const optionDraft = buildDefaultOptions();
-  if (typeof options.server !== "undefined") {
-    if (typeof options.server.masterEndpoints !== "undefined") {
-      optionDraft.server.masterEndpoints = options.server.masterEndpoints;
-    }
-    if (typeof options.server.host !== "undefined") {
-      optionDraft.server.host = options.server.host;
-    }
-    if (typeof options.server.port !== "undefined") {
-      optionDraft.server.port = options.server.port;
-    }
-    if (typeof options.server.maxPayload !== "undefined") {
-      optionDraft.server.maxPayload = options.server.maxPayload;
-    }
-    if (typeof options.server.backlog !== "undefined") {
-      optionDraft.server.backlog = options.server.backlog;
-    }
-    if (typeof options.server.path !== "undefined") {
-      optionDraft.server.path = options.server.path;
-    }
-  }
-  if (typeof options.publisher !== "undefined") {
-    if (typeof options.publisher.connectionSlotSize !== "undefined") {
-      optionDraft.publisher.connectionSlotSize =
-        options.publisher.connectionSlotSize;
-    }
-    if (
-      typeof options.publisher.maxContinuousDisconnectedTimes !== "undefined"
-    ) {
-      optionDraft.publisher.maxContinuousDisconnectedTimes =
-        options.publisher.maxContinuousDisconnectedTimes;
-    }
-    if (typeof options.publisher.endpointCacheSize !== "undefined") {
-      optionDraft.publisher.endpointCacheSize =
-        options.publisher.endpointCacheSize;
-    }
-    if (typeof options.publisher.endpointCacheTtl !== "undefined") {
-      optionDraft.publisher.endpointCacheTtl =
-        options.publisher.endpointCacheTtl;
-    }
-  }
-  if (typeof options.connection !== "undefined") {
-    if (typeof options.connection.waitOpenTimeout !== "undefined") {
-      optionDraft.connection.waitOpenTimeout =
-        options.connection.waitOpenTimeout;
-    }
-    if (typeof options.connection.reconnectDelay !== "undefined") {
-      optionDraft.connection.reconnectDelay = options.connection.reconnectDelay;
-    }
-    if (typeof options.connection.heartbeatInterval !== "undefined") {
-      optionDraft.connection.heartbeatInterval =
-        options.connection.heartbeatInterval;
-    }
-    if (typeof options.connection.roundTimeout !== "undefined") {
-      optionDraft.connection.roundTimeout = options.connection.roundTimeout;
-    }
-    if (typeof options.connection.retryRouteCount !== "undefined") {
-      optionDraft.connection.retryRouteCount =
-        options.connection.retryRouteCount;
-    }
-    if (typeof options.connection.sslEnabled !== "undefined") {
-      optionDraft.connection.sslEnabled = options.connection.sslEnabled;
-    }
-    if (typeof options.connection.roundDebugEnabled !== "undefined") {
-      optionDraft.connection.roundDebugEnabled =
-        options.connection.roundDebugEnabled;
-    }
-  }
-  return optionDraft;
-}
-
-export default buildDefaultOptions();

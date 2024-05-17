@@ -7,9 +7,10 @@
   "main": "hello.ts",
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "compile-watch": "tsc -w",
-    "run-watch": "node --watch-path=./src ./dist/example/src/main.js",
-    "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:compile-watch\" \"npm:run-watch\""
+    "build-watch": "tsc -w",
+    "start": "node ./dist/example/src/main.js",
+    "start-watch": "node --watch-path=./src ./dist/example/src/main.js",
+    "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:build-watch\" \"npm:start-watch\""
   },
   "dependencies": {
     "@fastify/autoload": "^5.8.0",

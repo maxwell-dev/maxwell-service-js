@@ -27,6 +27,7 @@ export class Registrar {
 
   private async _registerService() {
     const req = new msg_types.register_service_req_t({
+      id: this._options.serverOptions.id,
       httpPort: this._options.serverOptions.port,
     });
     try {

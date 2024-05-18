@@ -28,11 +28,13 @@ export class Options implements IOptions {
 export interface IServerOptions
   extends FastifyHttpOptions<http.Server>,
     FastifyListenOptions {
+  id?: string;
   wsOptions?: IWsOptions;
   loggerOptions?: PrettyOptions;
 }
 
 export class ServerOptions implements IServerOptions {
+  readonly id: string;
   readonly host: string;
   readonly port: number;
   readonly bodyLimit: number;
@@ -43,6 +45,9 @@ export class ServerOptions implements IServerOptions {
   constructor(options?: IServerOptions) {
     if (typeof options === "undefined") {
       options = {};
+    }
+    if (typeof options.id === "undefined") {
+      options.id = "service-0";
     }
     if (typeof options.host === "undefined") {
       options.host = "0.0.0.0";
@@ -65,6 +70,7 @@ export class ServerOptions implements IServerOptions {
         transport: { target: "pino-pretty", options: options.loggerOptions },
       };
     }
+    this.id = options.id;
     this.host = options.host;
     this.port = options.port;
     this.bodyLimit = options.bodyLimit;

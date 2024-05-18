@@ -32,6 +32,8 @@ const service: FastifyPluginAsync<MaxwellOptions> = async (
 };
 
 (async function main() {
-  const options = new MaxwellOptions();
+  const options = new MaxwellOptions({
+    serverOptions: { id: "service-0", port: 30000 },
+  });
   await serve(service, options);
 })();

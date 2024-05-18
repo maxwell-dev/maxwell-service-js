@@ -16,7 +16,7 @@ export async function serve(
 
   // delay is the number of milliseconds for the graceful close to finish
   const closeListeners = closeWithGrace(
-    { delay: parseInt(process.env.FASTIFY_CLOSE_GRACE_DELAY || "500") },
+    { delay: parseInt(process.env.FASTIFY_CLOSE_GRACE_DELAY || "200") },
     async function ({ signal, err }) {
       if (err) {
         fastify.log.error({ err }, "server closing with error");

@@ -4,7 +4,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "main": "hello.ts",
+  "main": "main.ts",
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "build-watch": "tsc -w",

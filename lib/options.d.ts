@@ -15,10 +15,12 @@ export declare class Options implements IOptions {
     constructor(options?: IOptions);
 }
 export interface IServerOptions extends FastifyHttpOptions<http.Server>, FastifyListenOptions {
+    id?: string;
     wsOptions?: IWsOptions;
     loggerOptions?: PrettyOptions;
 }
 export declare class ServerOptions implements IServerOptions {
+    readonly id: string;
     readonly host: string;
     readonly port: number;
     readonly bodyLimit: number;

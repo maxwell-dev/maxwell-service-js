@@ -15,6 +15,9 @@ export const hello: FastifyPluginAsync<MaxwellOptions> = async (
     await publish(options);
     return "ok";
   });
+  setInterval(async () => {
+    await publish(options);
+  }, 1000);
 };
 
 async function publish(options: MaxwellOptions) {

@@ -1,25 +1,25 @@
 import { AbortablePromise } from "@xuchaoqian/abortable-promise";
 import { Event, MultiAltEndpointsConnection, ProtocolMsg } from "maxwell-utils";
-import { Options } from "./internal";
+import { PartiallyRequiredOptions } from "./internal";
 
 export class MasterClient {
-  private _options: Options;
+  private _options: PartiallyRequiredOptions;
   private _endpoints: string[];
   private _currentEndpointIndex: number;
   private _connection: MultiAltEndpointsConnection;
   private static _instance: MasterClient;
 
-  public constructor(options: Options) {
+  public constructor(options: PartiallyRequiredOptions) {
     this._options = options;
     this._endpoints = options.masterClientOptions.masterEndpoints;
     this._currentEndpointIndex = this._endpoints.length - 1;
     this._connection = new MultiAltEndpointsConnection(
       this._pickEndpoint.bind(this),
-      options.masterClientOptions.connectionOptions
+      options.masterClientOptions.connectionOptions,
     );
   }
 
-  public static singleton(options: Options): MasterClient {
+  public static singleton(options: PartiallyRequiredOptions): MasterClient {
     if (typeof MasterClient._instance === "undefined") {
       MasterClient._instance = new MasterClient(options);
     }
@@ -32,29 +32,30 @@ export class MasterClient {
 
   public addConnectionListener(
     event: Event,
-    listener: (...args: any[]) => void
+    listener: (...args: any[]) => void,
   ): void {
     this._connection.addListener(event, listener);
   }
 
   public deleteConnectionListener(
     event: Event,
-    listener: (...args: any[]) => void
+    listener: (...args: any[]) => void,
   ): void {
     this._connection.deleteListener(event, listener);
   }
 
   public request(msg: ProtocolMsg): AbortablePromise<ProtocolMsg> {
     return this._connection
-      .waitOpen(
-        this._options.masterClientOptions.connectionOptions.waitOpenTimeout
-      )
+      .waitOpen({
+        timeout:
+          this._options.masterClientOptions.connectionOptions.waitOpenTimeout,
+      })
       .then((connection) => {
         return connection
-          .request(
-            msg,
-            this._options.masterClientOptions.connectionOptions.roundTimeout
-          )
+          .request(msg, {
+            timeout:
+              this._options.masterClientOptions.connectionOptions.roundTimeout,
+          })
           .then((result) => result);
       });
   }
@@ -65,7 +66,7 @@ export class MasterClient {
       this._currentEndpointIndex = 0;
     }
     return AbortablePromise.resolve(
-      this._endpoints[this._currentEndpointIndex]
+      this._endpoints[this._currentEndpointIndex],
     );
   }
 }

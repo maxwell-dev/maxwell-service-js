@@ -1,210 +1,141 @@
 import * as http from "node:http";
 import { FastifyHttpOptions, FastifyListenOptions } from "fastify";
-import { PrettyOptions } from "pino-pretty";
-import { IOptions as IBasicConnectionOptions } from "maxwell-utils";
+import { ConnectionOptions, buildConnectionOptions } from "maxwell-utils";
 
-export interface IOptions {
-  serverOptions?: IServerOptions;
-  publisherOptions?: IPublisherOptions;
-  masterClientOptions?: IMasterClientOptions;
+export interface Options {
+  serverOptions?: ServerOptions;
+  publisherOptions?: PublisherOptions;
+  masterClientOptions?: MasterClientOptions;
 }
 
-export class Options implements IOptions {
-  readonly serverOptions: ServerOptions;
-  readonly publisherOptions: PublisherOptions;
-  readonly masterClientOptions: MasterClientOptions;
-  constructor(options?: IOptions) {
-    if (typeof options === "undefined") {
-      options = {};
-    }
-    this.serverOptions = new ServerOptions(options.serverOptions);
-    this.publisherOptions = new PublisherOptions(options.publisherOptions);
-    this.masterClientOptions = new MasterClientOptions(
-      options.masterClientOptions
-    );
+export interface PartiallyRequiredOptions extends Options {
+  serverOptions: PartiallyRequiredServerOptions;
+  publisherOptions: DeepRequired<PublisherOptions>;
+  masterClientOptions: DeepRequired<MasterClientOptions>;
+}
+
+export function buildOptions(options?: Options): PartiallyRequiredOptions {
+  if (typeof options === "undefined") {
+    options = {};
   }
+  return {
+    serverOptions: buildServerOptions(options.serverOptions),
+    publisherOptions: buildPublisherOptions(options.publisherOptions),
+    masterClientOptions: buildMasterClientOptions(options.masterClientOptions),
+  };
 }
 
-export interface IServerOptions
+export interface ServerOptions
   extends FastifyHttpOptions<http.Server>,
     FastifyListenOptions {
   id?: string;
-  wsOptions?: IWsOptions;
-  loggerOptions?: PrettyOptions;
+  wsOptions?: WsOptions;
+  logger?: any;
 }
 
-export class ServerOptions implements IServerOptions {
-  readonly id: string;
-  readonly host: string;
-  readonly port: number;
-  readonly bodyLimit: number;
-  readonly backlog: number;
-  readonly wsOptions: WsOptions;
-  readonly logger: any; // use this field to be compitable with fastify API
+export interface PartiallyRequiredServerOptions extends ServerOptions {
+  id: string;
+  host: string;
+  port: number;
+  bodyLimit: number;
+  backlog: number;
+  wsOptions: WsOptions;
+  logger: any;
+}
 
-  constructor(options?: IServerOptions) {
-    if (typeof options === "undefined") {
-      options = {};
-    }
-    if (typeof options.id === "undefined") {
-      options.id = "service-0";
-    }
-    if (typeof options.host === "undefined") {
-      options.host = "0.0.0.0";
-    }
-    if (typeof options.port === "undefined") {
-      options.port = 30000;
-    }
-    if (typeof options.bodyLimit === "undefined") {
-      options.bodyLimit = 104857600;
-    }
-    if (typeof options.backlog === "undefined") {
-      options.backlog = 2048;
-    }
-    if (typeof options.loggerOptions === "undefined") {
-      options.logger = {
-        transport: { target: "pino-pretty" },
-      };
-    } else {
-      options.logger = {
-        transport: { target: "pino-pretty", options: options.loggerOptions },
-      };
-    }
-    this.id = options.id;
-    this.host = options.host;
-    this.port = options.port;
-    this.bodyLimit = options.bodyLimit;
-    this.backlog = options.backlog;
-    this.wsOptions = new WsOptions(options.wsOptions);
-    this.logger = options.logger;
+export function buildServerOptions(
+  options?: ServerOptions,
+): PartiallyRequiredServerOptions {
+  if (typeof options === "undefined") {
+    options = {};
   }
+  const ip = getIp();
+  const port = options.port ?? 9092;
+  return {
+    id: options.id ?? `service-${ip}:${port}`,
+    host: options.host ?? "0.0.0.0",
+    port: port,
+    bodyLimit: options.bodyLimit ?? 104857600,
+    backlog: options.backlog ?? 2048,
+    wsOptions: buildWsOptions(options.wsOptions),
+    logger: options.logger ?? {
+      level: "info",
+      transport: {
+        target: "pino-pretty",
+      },
+    },
+    ...options,
+  };
 }
 
-export interface IWsOptions {
+export interface WsOptions {
   maxPayload?: number;
   perMessageDeflate?: boolean;
 }
 
-export class WsOptions implements IWsOptions {
-  readonly maxPayload: number;
-  readonly perMessageDeflate: boolean;
-  constructor(options?: IWsOptions) {
-    if (typeof options === "undefined") {
-      options = {};
-    }
-    if (typeof options.maxPayload === "undefined") {
-      options.maxPayload = 104857600;
-    }
-    if (typeof options.perMessageDeflate === "undefined") {
-      options.perMessageDeflate = false;
-    }
-    this.maxPayload = options.maxPayload;
-    this.perMessageDeflate = options.perMessageDeflate;
+export function buildWsOptions(options?: WsOptions): Required<WsOptions> {
+  if (typeof options === "undefined") {
+    options = {};
   }
+  return {
+    maxPayload: options.maxPayload ?? 104857600,
+    perMessageDeflate: options.perMessageDeflate ?? false,
+  };
 }
 
-export interface IPublisherOptions {
+export interface PublisherOptions {
   connectionSlotSize?: number;
   maxContinuousDisconnectedTimes?: number;
   endpointCacheSize?: number;
   endpointCacheTtl?: number;
-  connectionOptions?: IConnectionOptions;
+  connectionOptions?: ConnectionOptions;
 }
 
-export class PublisherOptions implements IPublisherOptions {
-  readonly connectionSlotSize: number;
-  readonly maxContinuousDisconnectedTimes: number;
-  readonly endpointCacheSize: number;
-  readonly endpointCacheTtl: number;
-  readonly connectionOptions: ConnectionOptions;
-  constructor(options?: IPublisherOptions) {
-    if (typeof options === "undefined") {
-      options = {};
-    }
-    if (typeof options.connectionSlotSize === "undefined") {
-      options.connectionSlotSize = 1;
-    }
-    if (typeof options.maxContinuousDisconnectedTimes === "undefined") {
-      options.maxContinuousDisconnectedTimes = 5;
-    }
-    if (typeof options.endpointCacheSize === "undefined") {
-      options.endpointCacheSize = 50000;
-    }
-    if (typeof options.endpointCacheTtl === "undefined") {
-      options.endpointCacheTtl = 1000 * 60 * 10;
-    }
-    this.connectionSlotSize = options.connectionSlotSize;
-    this.maxContinuousDisconnectedTimes =
-      options.maxContinuousDisconnectedTimes;
-    this.endpointCacheSize = options.endpointCacheSize;
-    this.endpointCacheTtl = options.endpointCacheTtl;
-    this.connectionOptions = new ConnectionOptions(options.connectionOptions);
+export function buildPublisherOptions(
+  options?: PublisherOptions,
+): DeepRequired<PublisherOptions> {
+  if (typeof options === "undefined") {
+    options = {};
   }
+  return {
+    connectionSlotSize: options.connectionSlotSize ?? 1,
+    maxContinuousDisconnectedTimes: options.maxContinuousDisconnectedTimes ?? 5,
+    endpointCacheSize: options.endpointCacheSize ?? 50000,
+    endpointCacheTtl: options.endpointCacheTtl ?? 1000 * 60 * 10,
+    connectionOptions: buildConnectionOptions(options.connectionOptions),
+  };
 }
 
-export interface IMasterClientOptions {
+export interface MasterClientOptions {
   masterEndpoints?: string[];
-  connectionOptions?: IConnectionOptions;
+  connectionOptions?: ConnectionOptions;
 }
 
-export class MasterClientOptions implements IMasterClientOptions {
-  readonly masterEndpoints: string[];
-  readonly connectionOptions: ConnectionOptions;
-  constructor(options?: IMasterClientOptions) {
-    if (typeof options === "undefined") {
-      options = {};
-    }
-    if (typeof options.masterEndpoints === "undefined") {
-      options.masterEndpoints = ["localhost:8081"];
-    }
-    this.masterEndpoints = options.masterEndpoints;
-    this.connectionOptions = new ConnectionOptions(options.connectionOptions);
+export function buildMasterClientOptions(
+  options?: MasterClientOptions,
+): DeepRequired<MasterClientOptions> {
+  if (typeof options === "undefined") {
+    options = {};
   }
+  return {
+    masterEndpoints: options.masterEndpoints ?? ["localhost:8081"],
+    connectionOptions: buildConnectionOptions(options.connectionOptions),
+  };
 }
 
-export interface IConnectionOptions extends IBasicConnectionOptions {
-  waitOpenTimeout?: number;
-}
+type DeepRequired<T> = {
+  [P in keyof T]-?: T[P] extends object | undefined ? DeepRequired<T[P]> : T[P];
+};
 
-export class ConnectionOptions implements IConnectionOptions {
-  readonly waitOpenTimeout: number;
-  readonly reconnectDelay: number;
-  readonly heartbeatInterval: number;
-  readonly roundTimeout: number;
-  readonly retryRouteCount: number;
-  readonly sslEnabled: boolean;
-  readonly roundDebugEnabled: boolean;
-  constructor(options?: IConnectionOptions) {
-    if (typeof options === "undefined") {
-      options = {};
+function getIp(): string {
+  const interfaces = require("node:os").networkInterfaces();
+  for (const interfaceName of Object.keys(interfaces)) {
+    const interfaceAddresses = interfaces[interfaceName];
+    for (const address of interfaceAddresses) {
+      if (address.family === "IPv4" && !address.internal) {
+        return address.address;
+      }
     }
-    if (typeof options.waitOpenTimeout === "undefined") {
-      options.waitOpenTimeout = 3000;
-    }
-    if (typeof options.reconnectDelay === "undefined") {
-      options.reconnectDelay = 3000;
-    }
-    if (typeof options.heartbeatInterval === "undefined") {
-      options.heartbeatInterval = 10000;
-    }
-    if (typeof options.roundTimeout === "undefined") {
-      options.roundTimeout = 5000;
-    }
-    if (typeof options.retryRouteCount === "undefined") {
-      options.retryRouteCount = 0;
-    }
-    if (typeof options.sslEnabled === "undefined") {
-      options.sslEnabled = false;
-    }
-    if (typeof options.roundDebugEnabled === "undefined") {
-      options.roundDebugEnabled = false;
-    }
-    this.waitOpenTimeout = options.waitOpenTimeout;
-    this.reconnectDelay = options.reconnectDelay;
-    this.heartbeatInterval = options.heartbeatInterval;
-    this.roundTimeout = options.roundTimeout;
-    this.retryRouteCount = options.retryRouteCount;
-    this.sslEnabled = options.sslEnabled;
-    this.roundDebugEnabled = options.roundDebugEnabled;
   }
+  return "0.0.0.0";
 }

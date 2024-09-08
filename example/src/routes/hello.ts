@@ -1,28 +1,26 @@
 import { FastifyPluginAsync } from "fastify";
-import { Publisher, Options as MaxwellOptions } from "../../../src";
+import { Publisher, PartiallyRequiredOptions } from "../../../src";
 
-export const hello: FastifyPluginAsync<MaxwellOptions> = async (
+export const hello: FastifyPluginAsync<PartiallyRequiredOptions> = async (
   fastify,
-  options
+  options,
 ): Promise<void> => {
-  fastify.ws("/hello", async function (_request) {
-    return { payload: "world" };
-  });
-  fastify.get("/test/:a/:c/:d/1", async function (_request, _reply) {
-    return { payload: "world" };
-  });
-  fastify.get("/publish", async function (_request, _reply) {
+  fastify.ws("/hello", async (_request) => ({ payload: "world" }));
+  fastify.get("/test/:a/:c/:d/1", async (_request, _reply) => ({
+    payload: "world",
+  }));
+  fastify.get("/publish", async (_request, _reply) => {
     await publish(options);
     return "ok";
   });
 };
 
-async function publish(options: MaxwellOptions) {
+async function publish(options: PartiallyRequiredOptions) {
   const publisher = new Publisher(options);
   try {
     const rep = await publisher.publish(
       "topic_1",
-      new TextEncoder().encode("hello")
+      new TextEncoder().encode("hello"),
     );
     console.log("Successufly to publish: %s", rep);
   } catch (e) {

@@ -1,77 +1,51 @@
-/// <reference types="node" />
 import * as http from "node:http";
 import { FastifyHttpOptions, FastifyListenOptions } from "fastify";
-import { PrettyOptions } from "pino-pretty";
-import { IOptions as IBasicConnectionOptions } from "maxwell-utils";
-export interface IOptions {
-    serverOptions?: IServerOptions;
-    publisherOptions?: IPublisherOptions;
-    masterClientOptions?: IMasterClientOptions;
+import { ConnectionOptions } from "maxwell-utils";
+export interface Options {
+    serverOptions?: ServerOptions;
+    publisherOptions?: PublisherOptions;
+    masterClientOptions?: MasterClientOptions;
 }
-export declare class Options implements IOptions {
-    readonly serverOptions: ServerOptions;
-    readonly publisherOptions: PublisherOptions;
-    readonly masterClientOptions: MasterClientOptions;
-    constructor(options?: IOptions);
+export interface PartiallyRequiredOptions extends Options {
+    serverOptions: PartiallyRequiredServerOptions;
+    publisherOptions: DeepRequired<PublisherOptions>;
+    masterClientOptions: DeepRequired<MasterClientOptions>;
 }
-export interface IServerOptions extends FastifyHttpOptions<http.Server>, FastifyListenOptions {
+export declare function buildOptions(options?: Options): PartiallyRequiredOptions;
+export interface ServerOptions extends FastifyHttpOptions<http.Server>, FastifyListenOptions {
     id?: string;
-    wsOptions?: IWsOptions;
-    loggerOptions?: PrettyOptions;
+    wsOptions?: WsOptions;
+    logger?: any;
 }
-export declare class ServerOptions implements IServerOptions {
-    readonly id: string;
-    readonly host: string;
-    readonly port: number;
-    readonly bodyLimit: number;
-    readonly backlog: number;
-    readonly wsOptions: WsOptions;
-    readonly logger: any;
-    constructor(options?: IServerOptions);
+export interface PartiallyRequiredServerOptions extends ServerOptions {
+    id: string;
+    host: string;
+    port: number;
+    bodyLimit: number;
+    backlog: number;
+    wsOptions: WsOptions;
+    logger: any;
 }
-export interface IWsOptions {
+export declare function buildServerOptions(options?: ServerOptions): PartiallyRequiredServerOptions;
+export interface WsOptions {
     maxPayload?: number;
     perMessageDeflate?: boolean;
 }
-export declare class WsOptions implements IWsOptions {
-    readonly maxPayload: number;
-    readonly perMessageDeflate: boolean;
-    constructor(options?: IWsOptions);
-}
-export interface IPublisherOptions {
+export declare function buildWsOptions(options?: WsOptions): Required<WsOptions>;
+export interface PublisherOptions {
     connectionSlotSize?: number;
     maxContinuousDisconnectedTimes?: number;
     endpointCacheSize?: number;
     endpointCacheTtl?: number;
-    connectionOptions?: IConnectionOptions;
+    connectionOptions?: ConnectionOptions;
 }
-export declare class PublisherOptions implements IPublisherOptions {
-    readonly connectionSlotSize: number;
-    readonly maxContinuousDisconnectedTimes: number;
-    readonly endpointCacheSize: number;
-    readonly endpointCacheTtl: number;
-    readonly connectionOptions: ConnectionOptions;
-    constructor(options?: IPublisherOptions);
-}
-export interface IMasterClientOptions {
+export declare function buildPublisherOptions(options?: PublisherOptions): DeepRequired<PublisherOptions>;
+export interface MasterClientOptions {
     masterEndpoints?: string[];
-    connectionOptions?: IConnectionOptions;
+    connectionOptions?: ConnectionOptions;
 }
-export declare class MasterClientOptions implements IMasterClientOptions {
-    readonly masterEndpoints: string[];
-    readonly connectionOptions: ConnectionOptions;
-    constructor(options?: IMasterClientOptions);
-}
-export interface IConnectionOptions extends IBasicConnectionOptions {
-    waitOpenTimeout?: number;
-}
-export declare class ConnectionOptions implements IConnectionOptions {
-    readonly waitOpenTimeout: number;
-    readonly reconnectDelay: number;
-    readonly heartbeatInterval: number;
-    readonly roundTimeout: number;
-    readonly retryRouteCount: number;
-    readonly sslEnabled: boolean;
-    readonly roundDebugEnabled: boolean;
-    constructor(options?: IConnectionOptions);
-}
+export declare function buildMasterClientOptions(options?: MasterClientOptions): DeepRequired<MasterClientOptions>;
+type DeepRequired<T> = {
+    [P in keyof T]-?: T[P] extends object | undefined ? DeepRequired<T[P]> : T[P];
+};
+export {};

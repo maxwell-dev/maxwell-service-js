@@ -2,20 +2,20 @@ import { FastifyInstance } from "fastify";
 import { msg_types } from "maxwell-protocol";
 import { Event } from "maxwell-utils";
 
-import { MasterClient, Options } from "./internal";
+import { MasterClient, PartiallyRequiredOptions } from "./internal";
 
 export class Registrar {
   private _fastify: FastifyInstance;
-  private _options: Options;
+  private _options: PartiallyRequiredOptions;
   private _masterClient: MasterClient;
 
-  constructor(service: FastifyInstance, options: Options) {
+  constructor(service: FastifyInstance, options: PartiallyRequiredOptions) {
     this._fastify = service;
     this._options = options;
     this._masterClient = MasterClient.singleton(options);
     this._masterClient.addConnectionListener(
       Event.ON_CONNECTED,
-      this._onConnectedToMaster.bind(this)
+      this._onConnectedToMaster.bind(this),
     );
   }
 
@@ -68,7 +68,7 @@ export class Registrar {
         if (typeof route.websocket !== "undefined" && route.websocket) {
           continue;
         }
-        let methods;
+        let methods: string[] | string;
         if (typeof route.method === "string") {
           methods = [route.method];
         } else {

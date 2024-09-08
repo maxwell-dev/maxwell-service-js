@@ -30,12 +30,12 @@ export type WsHandler =
 // to export the decorators to the outer scope
 export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
   async (fastify, options) => {
+    /* Register fastify-websocket to handle ws connections */
     fastify.register(fastifyWebsocket, {
       options,
     });
 
-    // Internal logic to handle ws routes
-
+    /* Internal logic to handle ws routes */
     const wsRoutes: Map<string, WsHandler> = new Map();
 
     async function handeleMsg(ws: WebSocket, data: ArrayBuffer) {
@@ -51,8 +51,8 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
                 desc: `Unknown path: ${req.path}`,
                 conn0Ref: req.conn0Ref,
                 ref: req.ref,
-              })
-            )
+              }),
+            ),
           );
         } else {
           try {
@@ -71,8 +71,8 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
                     desc: rep.error.desc,
                     conn0Ref: req.conn0Ref,
                     ref: req.ref,
-                  })
-                )
+                  }),
+                ),
               );
             } else {
               ws.send(
@@ -81,8 +81,8 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
                     payload: JSON.stringify(rep.payload),
                     conn0Ref: req.conn0Ref,
                     ref: req.ref,
-                  })
-                )
+                  }),
+                ),
               );
             }
           } catch (_e) {
@@ -93,8 +93,8 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
                   desc: `Failed to handle req: ${req}, path: ${req.path}`,
                   conn0Ref: req.conn0Ref,
                   ref: req.ref,
-                })
-              )
+                }),
+              ),
             );
           }
         }
@@ -108,18 +108,19 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
               desc: `Received unknown msg: ${req}`,
               conn0Ref: req.conn0Ref,
               ref: req.ref,
-            })
-          )
+            }),
+          ),
         );
       }
     }
 
-    fastify.register(async function () {
+    /* Register a ws route */
+    fastify.register(async () => {
       fastify.get(
         "/$ws",
         { websocket: true },
         (socket /* WebSocket */, req /* FastifyRequest */) => {
-          console.info(`WsConnection was established: info: %s`, req.headers);
+          console.info("WsConnection was established: info: %s", req.headers);
 
           socket.binaryType = "arraybuffer";
 
@@ -130,24 +131,23 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
           const key = req.headers["sec-websocket-key"];
           socket.on("close", (code: number, reason: Buffer) => {
             console.info(
-              `WsConnection was closed: key: ${key}, code: ${code}, reason: "${reason.toString()}"`
+              `WsConnection was closed: key: ${key}, code: ${code}, reason: "${reason.toString()}"`,
             );
           });
 
           socket.on("error", (error: Error) => {
             console.error(`WsError occured: code: ${error.message}`);
           });
-        }
+        },
       );
     });
 
-    // Define decorators to add/get ws routes
-
-    fastify.decorate("ws", function (path: string, handler: WsHandler) {
+    /* Decorate the fastify instance to add/get ws routes */
+    fastify.decorate("ws", (path: string, handler: WsHandler) => {
       wsRoutes.set(path, handler);
     });
     fastify.decorate("wsRoutes", wsRoutes);
-  }
+  },
 );
 
 // When using .decorate you have to specify added properties for Typescript

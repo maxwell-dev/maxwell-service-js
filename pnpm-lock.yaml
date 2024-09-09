@@ -39,8 +39,8 @@ importers:
         specifier: ~1.5.0
         version: 1.5.0
       maxwell-utils:
-        specifier: ~0.19.0
-        version: 0.19.0
+        specifier: ~0.19.1
+        version: 0.19.1
       pino:
         specifier: ~9.4.0
         version: 9.4.0
@@ -1770,8 +1770,8 @@ packages:
   maxwell-protocol@1.5.0:
     resolution: {integrity: sha512-fRwx73o5Hs04dIepjFImUYo1PlZvXk3H9RHELqTRhlCpeKbiQIWgp6aqSEOfszHLdrKQf8RDxLs4Z3hDHGa2nw==}
 
-  maxwell-utils@0.19.0:
-    resolution: {integrity: sha512-RzNg1Qk9fywq9Ps6RFcJxKqHK8PE2m4LAS3QuBtxLvNub7qtH1bLJuwLb9DY7OiJkI8kZ/VVMeT+R4VOtoMFcg==}
+  maxwell-utils@0.19.1:
+    resolution: {integrity: sha512-gWagwU4R++7ivQxECI4W4decHutb/y+xBY7MuFNJl5li7B6dn8/dh3YcxZkUBwoIWEQ+gnECXaiTmlpYJkzBqg==}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -4544,7 +4544,7 @@ snapshots:
     dependencies:
       protobufjs: 7.4.0
 
-  maxwell-utils@0.19.0:
+  maxwell-utils@0.19.1:
     dependencies:
       '@xuchaoqian/abortable-promise': 1.11.0
       maxwell-protocol: 1.5.0

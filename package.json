@@ -1,6 +1,6 @@
 {
   "name": "maxwell-service",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "Maxwell service implementation for js/ts.",
   "author": "Chaoqian Xu <chaoranxu@gmail.com>",
   "license": "MIT",
@@ -29,7 +29,7 @@
     "fastify-plugin": "~4.5.1",
     "lru-cache": "~11.0.1",
     "maxwell-protocol": "~1.5.0",
-    "maxwell-utils": "~0.19.0",
+    "maxwell-utils": "~0.19.1",
     "pino": "~9.4.0",
     "pino-pretty": "~11.2.2"
   },

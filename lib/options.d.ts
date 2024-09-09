@@ -1,6 +1,6 @@
 import * as http from "node:http";
 import { FastifyHttpOptions, FastifyListenOptions } from "fastify";
-import { ConnectionOptions } from "maxwell-utils";
+import { ConnectionOptions, ConnectionPoolOptions } from "maxwell-utils";
 export interface Options {
     serverOptions?: ServerOptions;
     publisherOptions?: PublisherOptions;
@@ -33,11 +33,10 @@ export interface WsOptions {
 }
 export declare function buildWsOptions(options?: WsOptions): Required<WsOptions>;
 export interface PublisherOptions {
-    connectionSlotSize?: number;
-    maxContinuousDisconnectedTimes?: number;
     endpointCacheSize?: number;
     endpointCacheTtl?: number;
-    connectionOptions?: ConnectionOptions;
+    maxConsecutiveDisconnectedTimes?: number;
+    connectionPoolOptions?: ConnectionPoolOptions;
 }
 export declare function buildPublisherOptions(options?: PublisherOptions): DeepRequired<PublisherOptions>;
 export interface MasterClientOptions {

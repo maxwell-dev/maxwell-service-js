@@ -3,6 +3,7 @@ import { PartiallyRequiredOptions } from "./internal";
 export declare class Registrar {
     private _fastify;
     private _options;
+    private _logger;
     private _masterClient;
     constructor(service: FastifyInstance, options: PartiallyRequiredOptions);
     private _onConnectedToMaster;

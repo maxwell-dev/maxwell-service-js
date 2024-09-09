@@ -32,6 +32,9 @@ importers:
       fastify-plugin:
         specifier: ~4.5.1
         version: 4.5.1
+      pino:
+        specifier: ~9.4.0
+        version: 9.4.0
     devDependencies:
       '@types/node':
         specifier: ~22.5.4

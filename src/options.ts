@@ -1,6 +1,11 @@
 import * as http from "node:http";
 import { FastifyHttpOptions, FastifyListenOptions } from "fastify";
-import { ConnectionOptions, buildConnectionOptions } from "maxwell-utils";
+import {
+  ConnectionOptions,
+  ConnectionPoolOptions,
+  buildConnectionOptions,
+  buildConnectionPoolOptions,
+} from "maxwell-utils";
 
 export interface Options {
   serverOptions?: ServerOptions;
@@ -50,7 +55,7 @@ export function buildServerOptions(
     options = {};
   }
   const ip = getIp();
-  const port = options.port ?? 9092;
+  const port = options.port ?? 30000;
   return {
     id: options.id ?? `service-${ip}:${port}`,
     host: options.host ?? "0.0.0.0",
@@ -84,11 +89,10 @@ export function buildWsOptions(options?: WsOptions): Required<WsOptions> {
 }
 
 export interface PublisherOptions {
-  connectionSlotSize?: number;
-  maxContinuousDisconnectedTimes?: number;
   endpointCacheSize?: number;
   endpointCacheTtl?: number;
-  connectionOptions?: ConnectionOptions;
+  maxConsecutiveDisconnectedTimes?: number;
+  connectionPoolOptions?: ConnectionPoolOptions;
 }
 
 export function buildPublisherOptions(
@@ -98,11 +102,13 @@ export function buildPublisherOptions(
     options = {};
   }
   return {
-    connectionSlotSize: options.connectionSlotSize ?? 1,
-    maxContinuousDisconnectedTimes: options.maxContinuousDisconnectedTimes ?? 5,
     endpointCacheSize: options.endpointCacheSize ?? 50000,
     endpointCacheTtl: options.endpointCacheTtl ?? 1000 * 60 * 10,
-    connectionOptions: buildConnectionOptions(options.connectionOptions),
+    maxConsecutiveDisconnectedTimes:
+      options.maxConsecutiveDisconnectedTimes ?? 5,
+    connectionPoolOptions: buildConnectionPoolOptions(
+      options.connectionPoolOptions,
+    ),
   };
 }
 

@@ -1,73 +1,95 @@
+import { Logger } from "pino";
 import { msg_types } from "maxwell-protocol";
-import { Connection, Event } from "maxwell-utils";
+import {
+  ProtocolMsg,
+  Connection,
+  ConnectionFactory,
+  ConnectionPool,
+  IEventHandler,
+} from "maxwell-utils";
 import { TopicLocatlizer, PartiallyRequiredOptions } from "./internal";
 
-export class Publisher {
+export class Publisher implements IEventHandler {
   private _options: PartiallyRequiredOptions;
+  private _logger: Logger;
   private _topicLocatlizer: TopicLocatlizer;
-  private _connections: Map<string, Connection[]>;
-  private _continuousDisconnectedTimes: number;
+  private _connectionPools: Map<string, ConnectionPool<Connection>>;
+  private _consecutiveDisconnectedTimes: Map<string, number>;
 
   public constructor(options: PartiallyRequiredOptions) {
     this._options = options;
+    this._logger = options.serverOptions.logger;
     this._topicLocatlizer = new TopicLocatlizer(this._options);
-    this._connections = new Map(); // { endpoint => [connection0, connection1, ...] }
-    this._continuousDisconnectedTimes = 0;
+    this._connectionPools = new Map(); // { endpoint => ConnectionPool<Connection> }
+    this._consecutiveDisconnectedTimes = new Map(); // { endpoint => number }
   }
 
-  public async publish(topic: string, value: Uint8Array): Promise<any> {
+  public close(): void {
+    for (const connectionPool of this._connectionPools.values()) {
+      connectionPool.close();
+    }
+    this._topicLocatlizer.close();
+  }
+
+  public async publish(topic: string, value: Uint8Array): Promise<ProtocolMsg> {
     const connection = await this._getConnection(topic);
-    await connection.waitOpen({
-      timeout: this._options.publisherOptions.connectionOptions.waitOpenTimeout,
-    });
+    if (!connection.isOpen()) {
+      await connection.waitOpen({
+        timeout:
+          this._options.publisherOptions.connectionPoolOptions.waitOpenTimeout,
+      });
+    }
     return await connection.request(this._buildPublishReq(topic, value));
+  }
+
+  public onDisconnected(connection: Connection, ...rest: any[]): void {
+    const endpoint = connection.endpoint();
+    const consecutiveDisconnectedTimes =
+      (this._consecutiveDisconnectedTimes.get(endpoint) ?? 0) + 1;
+    if (
+      consecutiveDisconnectedTimes >=
+      this._options.publisherOptions.maxConsecutiveDisconnectedTimes
+    ) {
+      const connectionPool = this._connectionPools.get(endpoint);
+      this._logger.warn(
+        "Dropping the connection pool due to too many consecutive disconnections (%d): name: %s, endpoint: %s",
+        consecutiveDisconnectedTimes,
+        connectionPool?.name(),
+        endpoint,
+      );
+      connectionPool?.close();
+      this._connectionPools.delete(endpoint);
+      this._consecutiveDisconnectedTimes.delete(endpoint);
+    } else {
+      this._consecutiveDisconnectedTimes.set(
+        endpoint,
+        consecutiveDisconnectedTimes,
+      );
+    }
   }
 
   private async _getConnection(topic: string): Promise<Connection> {
     const endpoint = await this._topicLocatlizer.locate(topic);
     if (typeof endpoint === "undefined") {
+      this._logger.error(`Failed to locate topic: ${topic}`);
       throw new Error(`Failed to locate topic: ${topic}`);
     }
-    let connections = this._connections.get(endpoint);
-    if (typeof connections === "undefined") {
-      connections = [];
-      for (
-        let i = 0;
-        i < this._options.publisherOptions.connectionSlotSize;
-        i++
-      ) {
-        const connection = new Connection(
-          endpoint,
-          this._options.publisherOptions.connectionOptions,
-        );
-        connection.addListener(
-          Event.ON_DISCONNECTED,
-          this._onDisconnectedToBackend.bind(this),
-        );
-        connections.push(connection);
-      }
-      this._connections.set(endpoint, connections);
-    }
-    return connections[Math.floor(Math.random() * connections.length)];
-  }
-
-  private _onDisconnectedToBackend(connection: Connection) {
-    this._continuousDisconnectedTimes++;
-    if (
-      this._continuousDisconnectedTimes >=
-      this._options.publisherOptions.maxContinuousDisconnectedTimes
-    ) {
-      console.warn(
-        "Close connection because of too many continuous disconnected times: endpoint: %s",
-        connection.endpoint(),
+    let connectionPool = this._connectionPools.get(endpoint);
+    if (typeof connectionPool === "undefined") {
+      connectionPool = new ConnectionPool<Connection>(
+        new ConnectionFactory(endpoint),
+        this._options.publisherOptions.connectionPoolOptions,
+        this,
       );
-      this._continuousDisconnectedTimes = 0;
-      this._connections.delete(connection.endpoint());
-      setTimeout(() => connection.close(), 0);
+      this._connectionPools.set(endpoint, connectionPool);
     }
+    return connectionPool.getConnection();
   }
 
-  private _buildPublishReq(topic: string, value: Uint8Array) {
+  private _buildPublishReq(
+    topic: string,
+    value: Uint8Array,
+  ): typeof msg_types.push_req_t.prototype {
     return new msg_types.push_req_t({ topic, value });
   }
 }

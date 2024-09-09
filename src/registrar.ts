@@ -1,17 +1,19 @@
 import { FastifyInstance } from "fastify";
+import { Logger } from "pino";
 import { msg_types } from "maxwell-protocol";
 import { Event } from "maxwell-utils";
-
 import { MasterClient, PartiallyRequiredOptions } from "./internal";
 
 export class Registrar {
   private _fastify: FastifyInstance;
   private _options: PartiallyRequiredOptions;
+  private _logger: Logger;
   private _masterClient: MasterClient;
 
   constructor(service: FastifyInstance, options: PartiallyRequiredOptions) {
     this._fastify = service;
     this._options = options;
+    this._logger = options.serverOptions.logger;
     this._masterClient = MasterClient.singleton(options);
     this._masterClient.addConnectionListener(
       Event.ON_CONNECTED,
@@ -32,10 +34,10 @@ export class Registrar {
     });
     try {
       const res = await this._masterClient.request(req);
-      console.info("Successfully to register service: %s", res);
+      this._logger.info("Successfully to register service: %o", res);
       return true;
     } catch (e) {
-      console.error("Failed to register service: %s", e);
+      this._logger.error("Failed to register service: %o", e);
       return false;
     }
   }
@@ -44,9 +46,9 @@ export class Registrar {
     try {
       const req = this._buildSetRoutesReq();
       const res = await this._masterClient.request(req);
-      console.info("Successfully to set routes: %s", res);
+      this._logger.info("Successfully to set routes: %o", res);
     } catch (e) {
-      console.error("Failed to set routes: %s", e);
+      this._logger.error("Failed to set routes: %o", e);
     }
   }
 
@@ -101,7 +103,7 @@ export class Registrar {
               tracePaths.push(path);
               break;
             default:
-              console.error("Unknown method: %s", method);
+              this._logger.error("Unknown method: %s", method);
           }
         }
       }

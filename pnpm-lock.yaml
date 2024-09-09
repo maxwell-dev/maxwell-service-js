@@ -39,8 +39,11 @@ importers:
         specifier: ~1.5.0
         version: 1.5.0
       maxwell-utils:
-        specifier: ~0.18.1
-        version: 0.18.1
+        specifier: ~0.19.0
+        version: 0.19.0
+      pino:
+        specifier: ~9.4.0
+        version: 9.4.0
       pino-pretty:
         specifier: ~11.2.2
         version: 11.2.2
@@ -1109,8 +1112,8 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  caniuse-lite@1.0.30001658:
-    resolution: {integrity: sha512-N2YVqWbJELVdrnsW5p+apoQyYt51aBMSsBZki1XZEfeBCexcM/sf4xiAHcXQBkuOwJBXtWF7aW1sYX6tKebPHw==}
+  caniuse-lite@1.0.30001659:
+    resolution: {integrity: sha512-Qxxyfv3RdHAfJcXelgf0hU4DFUVXBGTjqrBUZLUh8AtlGnsDo+CnncYtTd95+ZKfnANUOzxyIQCuU/UeBZBYoA==}
 
   chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
@@ -1767,8 +1770,8 @@ packages:
   maxwell-protocol@1.5.0:
     resolution: {integrity: sha512-fRwx73o5Hs04dIepjFImUYo1PlZvXk3H9RHELqTRhlCpeKbiQIWgp6aqSEOfszHLdrKQf8RDxLs4Z3hDHGa2nw==}
 
-  maxwell-utils@0.18.1:
-    resolution: {integrity: sha512-OjJnYoBtDxwpETB/NmAKtSb6KXoW3CKVcOfKwhCV/ctw9eOoyr5FnrjavKBWcAAtrFutAKYGwXfYmEBObC2iuw==}
+  maxwell-utils@0.19.0:
+    resolution: {integrity: sha512-RzNg1Qk9fywq9Ps6RFcJxKqHK8PE2m4LAS3QuBtxLvNub7qtH1bLJuwLb9DY7OiJkI8kZ/VVMeT+R4VOtoMFcg==}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -3694,7 +3697,7 @@ snapshots:
 
   browserslist@4.23.3:
     dependencies:
-      caniuse-lite: 1.0.30001658
+      caniuse-lite: 1.0.30001659
       electron-to-chromium: 1.5.18
       node-releases: 2.0.18
       update-browserslist-db: 1.1.0(browserslist@4.23.3)
@@ -3716,7 +3719,7 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  caniuse-lite@1.0.30001658: {}
+  caniuse-lite@1.0.30001659: {}
 
   chalk@2.4.2:
     dependencies:
@@ -4541,7 +4544,7 @@ snapshots:
     dependencies:
       protobufjs: 7.4.0
 
-  maxwell-utils@0.18.1:
+  maxwell-utils@0.19.0:
     dependencies:
       '@xuchaoqian/abortable-promise': 1.11.0
       maxwell-protocol: 1.5.0

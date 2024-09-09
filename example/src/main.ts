@@ -33,7 +33,16 @@ import { run, PartiallyRequiredOptions } from "../../src";
   };
 
   const options = {
-    serverOptions: { id: "service-js-0", port: 9092 },
+    serverOptions: {
+      id: "service-js-0",
+      port: 9092,
+      logger: {
+        level: "debug",
+        transport: {
+          target: "pino-pretty",
+        },
+      },
+    },
   };
 
   await run(service, options);

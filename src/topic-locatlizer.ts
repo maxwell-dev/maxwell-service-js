@@ -1,3 +1,4 @@
+import { Logger } from "pino";
 import { LRUCache } from "lru-cache";
 import { msg_types } from "maxwell-protocol";
 import { Event } from "maxwell-utils";
@@ -5,12 +6,14 @@ import { MasterClient, PartiallyRequiredOptions } from "./internal";
 
 export class TopicLocatlizer {
   private _options: PartiallyRequiredOptions;
+  private _logger: Logger;
   private _checksum: number;
   private _cache: LRUCache<string, string>;
   private _masterClient: MasterClient;
 
   public constructor(options: PartiallyRequiredOptions) {
     this._options = options;
+    this._logger = options.serverOptions.logger;
     this._checksum = 0;
     this._cache = new LRUCache({
       max: this._options.publisherOptions.endpointCacheSize,
@@ -32,6 +35,10 @@ export class TopicLocatlizer {
     );
   }
 
+  public close(): void {
+    this._cache.clear();
+  }
+
   public async locate(topic: string): Promise<string | undefined> {
     return await this._cache.fetch(topic);
   }
@@ -42,17 +49,17 @@ export class TopicLocatlizer {
 
   private async _check() {
     const req = new msg_types.get_topic_dist_checksum_req_t();
-    console.info("Getting TopicDistChecksum: req: %s", req);
+    this._logger.info("Getting TopicDistChecksum: req: %o", req);
     let rep: typeof msg_types.get_topic_dist_checksum_rep_t.prototype;
     try {
       rep = await this._masterClient.request(req);
-      console.info("Successfully to get TopicDistChecksum: rep: %s", rep);
+      this._logger.info("Successfully to get TopicDistChecksum: rep: %o", rep);
     } catch (e) {
-      console.error("Failed to get TopicDistChecksum: %s", e);
+      this._logger.error("Failed to get TopicDistChecksum: %o", e);
       return;
     }
     if (this._checksum !== rep.checksum) {
-      console.info(
+      this._logger.info(
         "TopicDistChecksum has changed: local: %s, remote: %s, clear cache...",
         this._checksum,
         rep.checksum,
@@ -60,7 +67,7 @@ export class TopicLocatlizer {
       this._checksum = rep.checksum;
       this._cache.clear();
     } else {
-      console.info(
+      this._logger.info(
         "TopicDistChecksum stays the same: local: %s, remote: %s, do nothing.",
         this._checksum,
         rep.checksum,

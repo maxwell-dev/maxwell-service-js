@@ -120,7 +120,10 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
         "/$ws",
         { websocket: true },
         (socket /* WebSocket */, req /* FastifyRequest */) => {
-          console.info("WsConnection was established: info: %s", req.headers);
+          fastify.log.info(
+            "WsConnection was established: info: %o",
+            req.headers,
+          );
 
           socket.binaryType = "arraybuffer";
 
@@ -130,13 +133,13 @@ export const fastifyWs: FastifyPluginCallback<WsOptions> = fp<WsOptions>(
 
           const key = req.headers["sec-websocket-key"];
           socket.on("close", (code: number, reason: Buffer) => {
-            console.info(
+            fastify.log.info(
               `WsConnection was closed: key: ${key}, code: ${code}, reason: "${reason.toString()}"`,
             );
           });
 
           socket.on("error", (error: Error) => {
-            console.error(`WsError occured: code: ${error.message}`);
+            fastify.log.error("WsError occured: error: %o", error);
           });
         },
       );

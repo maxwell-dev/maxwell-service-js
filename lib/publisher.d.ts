@@ -1,12 +1,15 @@
+import { ProtocolMsg, Connection, IEventHandler } from "maxwell-utils";
 import { PartiallyRequiredOptions } from "./internal";
-export declare class Publisher {
+export declare class Publisher implements IEventHandler {
     private _options;
+    private _logger;
     private _topicLocatlizer;
-    private _connections;
-    private _continuousDisconnectedTimes;
+    private _connectionPools;
+    private _consecutiveDisconnectedTimes;
     constructor(options: PartiallyRequiredOptions);
-    publish(topic: string, value: Uint8Array): Promise<any>;
+    close(): void;
+    publish(topic: string, value: Uint8Array): Promise<ProtocolMsg>;
+    onDisconnected(connection: Connection, ...rest: any[]): void;
     private _getConnection;
-    private _onDisconnectedToBackend;
     private _buildPublishReq;
 }
